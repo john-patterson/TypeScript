@@ -1,0 +1,61 @@
+=== tests/cases/compiler/unreachableFlowInConditionals.ts ===
+function foo() {}
+>foo : () => void
+
+function bar(): undefined { return undefined; }
+>bar : () => undefined
+>undefined : undefined
+
+function baz(): null { return null; }
+>baz : () => null
+>null : null
+>null : null
+
+if (foo()) {
+>foo() : void
+>foo : () => void
+
+    let unreachable = true;
+>unreachable : boolean
+>true : true
+}
+
+if (bar()) {
+>bar() : undefined
+>bar : () => undefined
+
+    let unreachable = true;
+>unreachable : boolean
+>true : true
+}
+
+if (baz()) {
+>baz() : null
+>baz : () => null
+
+    let unreachable = true;
+>unreachable : boolean
+>true : true
+}
+
+foo() ? 1 : 0;
+>foo() ? 1 : 0 : 1 | 0
+>foo() : void
+>foo : () => void
+>1 : 1
+>0 : 0
+
+bar() ? 1 : 0;
+>bar() ? 1 : 0 : 1 | 0
+>bar() : undefined
+>bar : () => undefined
+>1 : 1
+>0 : 0
+
+baz() ? 1 : 0;
+>baz() ? 1 : 0 : 1 | 0
+>baz() : null
+>baz : () => null
+>1 : 1
+>0 : 0
+

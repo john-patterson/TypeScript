@@ -1,0 +1,41 @@
+=== tests/cases/compiler/unreachableFlowInConditionals.ts ===
+function foo() {}
+>foo : Symbol(foo, Decl(unreachableFlowInConditionals.ts, 0, 0))
+
+function bar(): undefined { return undefined; }
+>bar : Symbol(bar, Decl(unreachableFlowInConditionals.ts, 0, 17))
+>undefined : Symbol(undefined)
+
+function baz(): null { return null; }
+>baz : Symbol(baz, Decl(unreachableFlowInConditionals.ts, 1, 47))
+
+if (foo()) {
+>foo : Symbol(foo, Decl(unreachableFlowInConditionals.ts, 0, 0))
+
+    let unreachable = true;
+>unreachable : Symbol(unreachable, Decl(unreachableFlowInConditionals.ts, 5, 7))
+}
+
+if (bar()) {
+>bar : Symbol(bar, Decl(unreachableFlowInConditionals.ts, 0, 17))
+
+    let unreachable = true;
+>unreachable : Symbol(unreachable, Decl(unreachableFlowInConditionals.ts, 9, 7))
+}
+
+if (baz()) {
+>baz : Symbol(baz, Decl(unreachableFlowInConditionals.ts, 1, 47))
+
+    let unreachable = true;
+>unreachable : Symbol(unreachable, Decl(unreachableFlowInConditionals.ts, 13, 7))
+}
+
+foo() ? 1 : 0;
+>foo : Symbol(foo, Decl(unreachableFlowInConditionals.ts, 0, 0))
+
+bar() ? 1 : 0;
+>bar : Symbol(bar, Decl(unreachableFlowInConditionals.ts, 0, 17))
+
+baz() ? 1 : 0;
+>baz : Symbol(baz, Decl(unreachableFlowInConditionals.ts, 1, 47))
+
