@@ -7,15 +7,24 @@
 ////import * as a from "./a";
 ////f/**/;
 
-goTo.marker("");
-verify.completionListContains({ name: "foo", source: "/a" }, "function foo(): void", "", "function", /*spanIndex*/ undefined, /*hasAction*/ true, { includeExternalModuleExports: true });
-
+verify.completions({
+    marker: "",
+    includes: {
+        name: "foo",
+        source: "/a",
+        sourceDisplay: "./a",
+        text: "function foo(): void",
+        kind: "function",
+        kindModifiers: "export",
+        hasAction: true,
+        sortText: completion.SortText.AutoImportSuggestions
+    },
+    preferences: { includeCompletionsForModuleExports: true },
+});
 verify.applyCodeActionFromCompletion("", {
     name: "foo",
     source: "/a",
-    description: `Import 'foo' from "./a".`,
-    // TODO: GH#18445
+    description: `Change 'foo' to 'a.foo'`,
     newFileContent: `import * as a from "./a";
-import { foo } from "./a";\r
-f;`,
+a.f;`,
 });

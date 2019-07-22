@@ -25,3 +25,18 @@ var M;
     }
     M.C = C;
 })(M || (M = {}));
+
+
+//// [symbolDeclarationEmit12.d.ts]
+declare module M {
+    interface I {
+    }
+    export class C {
+        [Symbol.iterator]: I;
+        [Symbol.toPrimitive](x: I): void;
+        [Symbol.isConcatSpreadable](): I;
+        readonly [Symbol.toPrimitive]: any;
+        [Symbol.toPrimitive]: I;
+    }
+    export {};
+}

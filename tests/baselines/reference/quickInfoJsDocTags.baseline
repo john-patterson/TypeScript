@@ -2,13 +2,13 @@
   {
     "marker": {
       "fileName": "/tests/cases/fourslash/quickInfoJsDocTags.ts",
-      "position": 258
+      "position": 272
     },
     "quickInfo": {
       "kind": "function",
       "kindModifiers": "",
       "textSpan": {
-        "start": 258,
+        "start": 272,
         "length": 3
       },
       "displayParts": [
@@ -63,18 +63,22 @@
       ],
       "documentation": [
         {
-          "text": "Doc{T} A template",
+          "text": "Doc",
           "kind": "text"
         }
       ],
       "tags": [
         {
           "name": "author",
-          "text": "Me"
+          "text": "Me <me@domain.tld>"
         },
         {
           "name": "augments",
           "text": "C<T> Augments it"
+        },
+        {
+          "name": "template",
+          "text": "T A template"
         },
         {
           "name": "type",
@@ -82,7 +86,7 @@
         },
         {
           "name": "typedef",
-          "text": "NumOrStr "
+          "text": "NumOrStr"
         },
         {
           "name": "property",

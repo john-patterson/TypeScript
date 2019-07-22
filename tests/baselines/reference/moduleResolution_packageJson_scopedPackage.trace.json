@@ -3,6 +3,7 @@
     "Module resolution kind is not specified, using 'NodeJs'.",
     "Loading module '@foo/bar' from 'node_modules' folder, target file type 'TypeScript'.",
     "Found 'package.json' at '/node_modules/@foo/bar/package.json'.",
+    "'package.json' does not have a 'typesVersions' field.",
     "File '/node_modules/@foo/bar.ts' does not exist.",
     "File '/node_modules/@foo/bar.tsx' does not exist.",
     "File '/node_modules/@foo/bar.d.ts' does not exist.",

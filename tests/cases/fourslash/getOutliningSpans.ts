@@ -1,6 +1,6 @@
 /// <reference path="fourslash.ts"/>
 
-////// interface 
+////// interface
 ////interface IFoo[| {
 ////    getDist(): number;
 ////}|]
@@ -25,6 +25,12 @@
 ////
 ////    }|]
 ////}|]
+////// class expressions
+//// (new class[| {
+////     bla()[| {
+////
+////     }|]
+//// }|])
 ////switch(1)[| {
 //// case 1: break;
 ////}|]
@@ -63,9 +69,9 @@
 ////}|])
 ////
 ////// trivia handeling
-////class ClassFooWithTrivia[| /*  some comments */ 
+////class ClassFooWithTrivia[| /*  some comments */
 ////   /* more trivia */ {
-////    
+////
 ////
 ////    /*some trailing trivia */
 ////}|] /* even more */
@@ -85,8 +91,8 @@
 ////        [
 ////          [
 ////            [
-////              1,2,3    
-////            ]    
+////              1,2,3
+////            ]
 ////          ]
 ////        ]
 ////      ]
@@ -96,5 +102,18 @@
 //////outline after a deeply nested node
 ////class AfterNestedNodes[| {
 ////}|]
+////// function arguments
+////function f(x: number[], y: number[])[| {
+////    return 3;
+////}|]
+////f(
+//////  single line array literal span won't render in VS
+////    [|[0]|],
+////    [|[
+////        1,
+////        2
+////    ]|]
+////);
 
-verify.outliningSpansInCurrentFile(test.ranges());
+
+verify.outliningSpansInCurrentFile(test.ranges(), "code");

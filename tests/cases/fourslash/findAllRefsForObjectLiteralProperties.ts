@@ -1,17 +1,11 @@
 /// <reference path='fourslash.ts'/>
 
 ////var x = {
-////    [|{| "isWriteAccess": true, "isDefinition": true |}property|]: {}
+////    [|[|{| "isWriteAccess": true, "isDefinition": true, "contextRangeIndex": 0 |}property|]: {}|]
 ////};
 ////
 ////x.[|property|];
 ////
-////let {[|property|]: pVar} = x;
+////[|let {[|{| "contextRangeIndex": 3 |}property|]: pVar} = x;|]
 
-const ranges = test.ranges();
-const [r0, r1, r2] = ranges;
-verify.referenceGroups(r0, [{ definition: "(property) property: {}", ranges }]);
-verify.referenceGroups([r1, r2], [
-    { definition: "(property) property: {}", ranges: [r0] },
-    { definition: "(property) property: {}", ranges: [r1, r2] }
-]);
+verify.singleReferenceGroup("(property) property: {}", "property");

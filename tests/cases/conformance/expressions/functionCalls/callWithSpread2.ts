@@ -4,6 +4,7 @@ declare function prefix(s: string, a?: number, b?: number): void;
 declare function rest(s: string, a?: number, b?: number,  ...rest: number[]): void;
 declare function normal(s: string): void;
 declare function thunk(): string;
+declare function prefix2(s: string, n: number, a?: number, b?: number): void;
 
 declare var ns: number[];
 declare var mixed: (number | string)[];
@@ -18,13 +19,9 @@ prefix("a", ...ns)
 rest("d", ...ns)
 
 
-// this covers the arguments case
+// extra arguments
 normal("g", ...ns)
-normal("h", ...mixed)
-normal("i", ...tuple)
 thunk(...ns)
-thunk(...mixed)
-thunk(...tuple)
 
 // bad
 all(...mixed)
@@ -36,3 +33,4 @@ rest("f", ...tuple)
 prefix(...ns) // required parameters are required
 prefix(...mixed)
 prefix(...tuple)
+prefix2("g", ...ns);
