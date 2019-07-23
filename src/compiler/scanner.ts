@@ -638,6 +638,105 @@ namespace ts {
     }
 
     /**
+     * Iterates over each comment in a given body of text, calling @param cb on each.
+     * If @param cb ever returns true, iterations stops and subsequent comments are not scanned.
+     * @param text Body of text to scan
+     * @param cb Callback when a comment is scanned. If true is returns, iteration stops.
+     * @param rangeStart Optional (inclusive) start to the scanning range
+     * @param rangeEnd Optional (exclusive) end to the scanning range
+     */
+    export function forEachCommentInRange(text: string, cb: (pos: number, end: number, kind: CommentKind) => boolean | void, rangeStart = 0, rangeEnd = text.length) {
+        let hasPendingComment = false;
+        let pendingStart!: number;
+        let pendingKind!: CommentKind;
+        let pos = rangeStart;
+
+        if (rangeStart < 0 || rangeEnd < rangeStart || text.length < rangeEnd) {
+            return;
+        }
+
+        while (pos < rangeEnd) {
+            const ch = text.charCodeAt(pos);
+            switch (ch) {
+                case CharacterCodes.carriageReturn:
+                    if (text.charCodeAt(pos + 1) === CharacterCodes.lineFeed) {
+                        pos++;
+                    }
+                    // falls through
+                case CharacterCodes.lineFeed:
+                    pos++;
+                    if (hasPendingComment && pendingKind === SyntaxKind.SingleLineCommentTrivia) {
+                        if (cb(pendingStart, pos - 1, pendingKind)) {
+                            return;
+                        }
+                        pendingStart = pos;
+                        hasPendingComment = false;
+                    }
+                    continue;
+                case CharacterCodes.tab:
+                case CharacterCodes.verticalTab:
+                case CharacterCodes.formFeed:
+                case CharacterCodes.space:
+                    pos++;
+                    continue;
+                case CharacterCodes.slash:
+                    const nextChar = text.charCodeAt(pos + 1);
+                    if (!hasPendingComment && (nextChar === CharacterCodes.slash || nextChar === CharacterCodes.asterisk)) {
+                        hasPendingComment = true;
+                        pendingKind = nextChar === CharacterCodes.slash ? SyntaxKind.SingleLineCommentTrivia : SyntaxKind.MultiLineCommentTrivia;
+                        pendingStart = pos;
+                        pos++; // skip second '/'
+                    }
+                    pos++; // Skip first '/'
+                    continue;
+                case CharacterCodes.asterisk:
+                    const isMultilineCommentClose = text.charCodeAt(pos + 1) === CharacterCodes.slash;
+                    if (hasPendingComment && isMultilineCommentClose && pendingKind === SyntaxKind.MultiLineCommentTrivia) {
+                        pos++; // skip '/'
+                        if (cb(pendingStart, pos + 1, pendingKind)) {
+                            return;
+                        }
+                        pendingStart = pos;
+                        hasPendingComment = false;
+                    }
+                    pos++; // skip '*'
+                    continue;
+                default:
+                    pos += 1;
+                    break;
+            }
+        }
+
+        if (hasPendingComment && pendingKind === SyntaxKind.SingleLineCommentTrivia) {
+            cb(pendingStart, text.length, pendingKind); // return value doesn't matter, we're done here.
+        }
+    }
+
+    export function reduceCommentsInRange<TReturn>(text: string, func: (acc: TReturn | undefined, pos: number, end: number, kind: CommentKind) => TReturn, rangeStart = 0, rangeEnd = text.length, initialStart?: number, initialEnd?: number, initialKind?: CommentKind): TReturn | undefined {
+        let accumulator: TReturn | undefined;
+        let seedStart: number | undefined = initialStart;
+        let seedEnd: number | undefined = initialEnd;
+        let seedKind: CommentKind | undefined = initialKind;
+
+        forEachCommentInRange(text, (commentPos, commentEnd, commentKind) => {
+            if (seedStart === undefined || seedEnd === undefined || seedKind === undefined) {
+                seedStart = commentPos;
+                seedEnd = commentEnd;
+                seedKind = commentKind;
+            }
+
+            if (accumulator === undefined) {
+                accumulator = func(accumulator, seedStart, seedEnd, seedKind);
+            }
+            else {
+                accumulator = func(accumulator, commentPos, commentEnd, commentKind);
+            }
+        }, rangeStart, rangeEnd);
+
+        return accumulator;
+    }
+
+    /**
      * Invokes a callback for each comment range following the provided position.
      *
      * Single-line comment ranges include the leading double-slash characters but not the ending
@@ -658,20 +757,36 @@ namespace ts {
      *      return value of the callback.
      */
     function iterateCommentRanges<T, U>(reduce: boolean, text: string, pos: number, trailing: boolean, cb: (pos: number, end: number, kind: CommentKind, hasTrailingNewLine: boolean, state: T, memo: U | undefined) => U, state: T, initial?: U): U | undefined {
-        let pendingPos!: number;
+        /*let pendingPos!: number;
         let pendingEnd!: number;
         let pendingKind!: CommentKind;
         let pendingHasTrailingNewLine!: boolean;
         let hasPendingCommentRange = false;
         let collecting = trailing;
         let accumulator = initial;
+        */
         if (pos === 0) {
-            collecting = true;
+            // collecting = true;
             const shebang = getShebang(text);
             if (shebang) {
                 pos = shebang.length;
             }
         }
+
+        if (reduce) {
+            return reduceCommentsInRange(text, (acc: U, pos: number, end: number, kind: CommentKind) => {
+                return cb(pos, end, kind, /* hasTrailingNewLine */ false, state, acc);
+            }, pos);
+        }
+        else {
+            forEachCommentInRange(text, (pos, end, kind) => {
+                cb(pos, end, kind, /* hasTrailingNewLine */ false, state, initial);
+                return trailing;
+            }, pos);
+            return undefined;
+        }
+
+        /*
         scan: while (pos >= 0 && pos < text.length) {
             const ch = text.charCodeAt(pos);
             switch (ch) {
