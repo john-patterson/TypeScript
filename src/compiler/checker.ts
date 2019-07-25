@@ -772,6 +772,16 @@ namespace ts {
             symbol: esSymbolType,
             undefined: undefinedType
         });
+
+        interface KnownBuiltinErrors {
+            minimumVersion: ScriptTarget;
+            errorMessage: DiagnosticMessage;
+        }
+
+        const builtInsMinimumVersions = createMapFromTemplate<KnownBuiltinErrors>({
+            BigInt: { minimumVersion: ScriptTarget.ESNext, errorMessage: Diagnostics.BigInt_literals_are_not_available_when_targeting_lower_than_ESNext }
+        });
+
         const typeofType = createTypeofType();
 
         let _jsxNamespace: __String;
@@ -1738,7 +1748,8 @@ namespace ts {
                         !checkAndReportErrorForUsingTypeAsNamespace(errorLocation, name, meaning) &&
                         !checkAndReportErrorForUsingTypeAsValue(errorLocation, name, meaning) &&
                         !checkAndReportErrorForUsingNamespaceModuleAsValue(errorLocation, name, meaning) &&
-                        !checkAndReportErrorForUsingValueAsType(errorLocation, name, meaning)) {
+                        !checkAndReportErrorForUsingValueAsType(errorLocation, name, meaning) &&
+                        !checkAndReportKnownVersionDependentBuiltins(errorLocation, name)) {
                         let suggestion: Symbol | undefined;
                         if (suggestedNameNotFoundMessage && suggestionCount < maximumSuggestionCount) {
                             suggestion = getSuggestedSymbolForNonexistentSymbol(originalLocation, name, meaning);
@@ -1965,6 +1976,17 @@ namespace ts {
                 const symbol = resolveSymbol(resolveName(errorLocation, name, ~SymbolFlags.Type & SymbolFlags.Value, /*nameNotFoundMessage*/undefined, /*nameArg*/ undefined, /*isUse*/ false));
                 if (symbol && !(symbol.flags & SymbolFlags.Namespace)) {
                     error(errorLocation, Diagnostics._0_refers_to_a_value_but_is_being_used_as_a_type_here, unescapeLeadingUnderscores(name));
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        function checkAndReportKnownVersionDependentBuiltins(errorLocation: Node, name: __String): boolean {
+            const knownError: KnownBuiltinErrors | undefined = builtInsMinimumVersions.get(name as string);
+            if (knownError) {
+                if (languageVersion < knownError.minimumVersion) {
+                    error(errorLocation, knownError.errorMessage, unescapeLeadingUnderscores(name));
                     return true;
                 }
             }
